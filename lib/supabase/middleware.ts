@@ -7,11 +7,14 @@ export async function updateSession(request: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('Missing Supabase environment variables')
-    // Return early if environment variables are missing
-    return NextResponse.next({
-      request,
-    })
+    console.error('Missing Supabase environment variables in middleware')
+    // If no env vars, redirect to login for dashboard routes, otherwise continue
+    if (request.nextUrl.pathname.startsWith("/dashboard")) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/auth/login"
+      return NextResponse.redirect(url)
+    }
+    return NextResponse.next()
   }
 
   let supabaseResponse = NextResponse.next({
@@ -19,8 +22,6 @@ export async function updateSession(request: NextRequest) {
   })
 
   try {
-    // With Fluid compute, don't put this client in a global environment
-    // variable. Always create a new one on each request.
     const supabase = createServerClient(
       supabaseUrl,
       supabaseAnonKey,
@@ -34,36 +35,36 @@ export async function updateSession(request: NextRequest) {
             supabaseResponse = NextResponse.next({
               request,
             })
-            cookiesToSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, options))
+            cookiesToSet.forEach(({ name, value, options }) => {
+              supabaseResponse.cookies.set(name, value, options)
+            })
           },
         },
       },
     )
 
-    // Do not run code between createServerClient and
-    // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-    // issues with users being randomly logged out.
-
-    // IMPORTANT: If you remove getUser() and you use server-side rendering
-    // with the Supabase client, your users may be randomly logged out.
+    // Get user session
     const {
       data: { user },
     } = await supabase.auth.getUser()
 
+    // Protect dashboard routes
     if (request.nextUrl.pathname.startsWith("/dashboard") && !user) {
-      // no user, redirect to login page
       const url = request.nextUrl.clone()
       url.pathname = "/auth/login"
       return NextResponse.redirect(url)
     }
 
-    // IMPORTANT: You *must* return the supabaseResponse object as it is.
     return supabaseResponse
   } catch (error) {
-    console.error('Error in middleware:', error)
-    // Return a basic response if there's an error
-    return NextResponse.next({
-      request,
-    })
+    console.error('Error in updateSession:', error)
+    // If there's an error and it's a dashboard route, redirect to login
+    if (request.nextUrl.pathname.startsWith("/dashboard")) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/auth/login"
+      return NextResponse.redirect(url)
+    }
+    // For other routes, just continue
+    return NextResponse.next()
   }
 }
