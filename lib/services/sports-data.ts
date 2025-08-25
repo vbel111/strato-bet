@@ -10,11 +10,16 @@ export class SportsDataService {
     this.oddsApiKey = process.env.ODDS_API_KEY || ""
     this.pandaScoreApiKey = process.env.PANDASCORE_API_KEY || ""
     
-    if (!this.oddsApiKey) {
-      console.warn("ODDS_API_KEY not configured - using mock data for traditional sports")
+    if (this.oddsApiKey) {
+      console.log("✅ The Odds API key configured")
+    } else {
+      console.warn("⚠️ ODDS_API_KEY not configured - using mock data for traditional sports")
     }
-    if (!this.pandaScoreApiKey) {
-      console.warn("PANDASCORE_API_KEY not configured - using mock data for esports")
+    
+    if (this.pandaScoreApiKey) {
+      console.log("✅ PandaScore API key configured")
+    } else {
+      console.warn("⚠️ PANDASCORE_API_KEY not configured - using mock data for esports")
     }
   }
 

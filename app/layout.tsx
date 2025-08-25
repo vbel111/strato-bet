@@ -4,9 +4,9 @@ import { GeistMono } from 'geist/font/mono'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.app',
+  title: 'StratoBet - Smart Sports Betting',
+  description: 'AI-powered sports betting platform with predictive analytics',
+  generator: 'Next.js',
 }
 
 export default function RootLayout({

@@ -22,7 +22,6 @@ export default function SignUpPage() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
-    const supabase = createClient()
     setIsLoading(true)
     setError(null)
 
@@ -39,6 +38,7 @@ export default function SignUpPage() {
     }
 
     try {
+      const supabase = createClient()
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -52,7 +52,17 @@ export default function SignUpPage() {
       if (error) throw error
       router.push("/auth/signup-success")
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred")
+      console.error('Signup error:', error)
+      if (error instanceof Error) {
+        // Don't show JWT tokens or sensitive data to users
+        if (error.message.includes('eyJ')) {
+          setError("Configuration error. Please contact support.")
+        } else {
+          setError(error.message)
+        }
+      } else {
+        setError("An unexpected error occurred. Please try again.")
+      }
     } finally {
       setIsLoading(false)
     }
