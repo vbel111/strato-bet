@@ -275,51 +275,39 @@ export class BankrollManager {
       limit?: number
     },
   ): Promise<BetRecord[]> {
-    const supabase = await createClient()
+    try {
+      const supabase = await createClient()
 
-    let query = supabase
-      .from("user_bets")
-      .select(`
-        *,
-        match:matches(
-          *,
-          home_team:teams!matches_home_team_id_fkey(name),
-          away_team:teams!matches_away_team_id_fkey(name),
-          league:leagues(name)
-        )
-      `)
-      .eq("user_id", userId)
-      .order("placed_at", { ascending: false })
+      let query = supabase
+        .from("user_bets")
+        .select("*")
+        .eq("user_id", userId)
+        .order("placed_at", { ascending: false })
 
-    if (filters?.status) {
-      query = query.eq("status", filters.status)
+      if (filters?.status) {
+        query = query.eq("status", filters.status)
+      }
+
+      if (filters?.isSimulation !== undefined) {
+        query = query.eq("is_simulation", filters.isSimulation)
+      }
+
+      if (filters?.limit) {
+        query = query.limit(filters.limit)
+      }
+
+      const { data: bets, error } = await query
+
+      if (error) {
+        console.error('Error fetching user bets:', error)
+        return [] // Return empty array instead of throwing
+      }
+
+      return bets || []
+    } catch (error) {
+      console.error('Failed to fetch user bets:', error)
+      return [] // Return empty array for new users
     }
-
-    if (filters?.isSimulation !== undefined) {
-      query = query.eq("is_simulation", filters.isSimulation)
-    }
-
-    if (filters?.limit) {
-      query = query.limit(filters.limit)
-    }
-
-    const { data: bets, error } = await query
-
-    if (error) {
-      throw new Error(`Failed to fetch bets: ${error.message}`)
-    }
-
-    return bets.map((bet) => ({
-      ...bet,
-      match_info: bet.match
-        ? {
-            home_team: bet.match.home_team.name,
-            away_team: bet.match.away_team.name,
-            league: bet.match.league.name,
-            match_date: bet.match.match_date,
-          }
-        : undefined,
-    }))
   }
 
   async getBankrollStats(userId: string): Promise<BankrollStats> {

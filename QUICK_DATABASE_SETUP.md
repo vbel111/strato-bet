@@ -35,6 +35,9 @@ CREATE POLICY "Users can view own profile" ON public.user_profiles
 CREATE POLICY "Users can update own profile" ON public.user_profiles
   FOR UPDATE USING (auth.uid() = id);
 
+CREATE POLICY "Users can insert own profile" ON public.user_profiles
+  FOR INSERT WITH CHECK (auth.uid() = id);
+
 -- Create user_bankrolls table
 CREATE TABLE IF NOT EXISTS public.user_bankrolls (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -57,6 +60,9 @@ CREATE POLICY "Users can view own bankroll" ON public.user_bankrolls
 
 CREATE POLICY "Users can update own bankroll" ON public.user_bankrolls
   FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own bankroll" ON public.user_bankrolls
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Create user_bets table
 CREATE TABLE IF NOT EXISTS public.user_bets (

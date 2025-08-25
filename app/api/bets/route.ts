@@ -29,7 +29,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ bets })
   } catch (error) {
     console.error("Error fetching bets:", error)
-    return NextResponse.json({ error: "Failed to fetch bets" }, { status: 500 })
+    return NextResponse.json({ 
+      error: "Failed to fetch bets",
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 })
   }
 }
 

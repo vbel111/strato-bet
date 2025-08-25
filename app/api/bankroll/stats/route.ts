@@ -14,12 +14,29 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    // Check if user has a bankroll record, create if not
+    const { data: bankroll } = await supabase
+      .from('user_bankrolls')
+      .select('*')
+      .eq('user_id', user.id)
+      .single()
+
+    if (!bankroll) {
+      // Create bankroll for new user
+      await supabase
+        .from('user_bankrolls')
+        .insert({ user_id: user.id })
+    }
+
     const bankrollManager = BankrollManager.getInstance()
     const stats = await bankrollManager.getBankrollStats(user.id)
 
     return NextResponse.json({ stats })
   } catch (error) {
     console.error("Error fetching bankroll stats:", error)
-    return NextResponse.json({ error: "Failed to fetch bankroll stats" }, { status: 500 })
+    return NextResponse.json({ 
+      error: "Failed to fetch bankroll stats",
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 })
   }
 }
