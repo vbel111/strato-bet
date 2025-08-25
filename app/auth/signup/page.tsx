@@ -39,6 +39,17 @@ export default function SignUpPage() {
 
     try {
       const supabase = createClient()
+      
+      // Test the connection first
+      console.log('Testing Supabase connection...')
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+      console.log('Session test result:', { sessionData, sessionError })
+      
+      if (sessionError) {
+        throw new Error(`Supabase connection failed: ${sessionError.message}`)
+      }
+      
+      console.log('Attempting signup...')
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -49,14 +60,19 @@ export default function SignUpPage() {
           },
         },
       })
+      
       if (error) throw error
       router.push("/auth/signup-success")
     } catch (error: unknown) {
       console.error('Signup error:', error)
       if (error instanceof Error) {
-        // Don't show JWT tokens or sensitive data to users
-        if (error.message.includes('eyJ')) {
+        // Provide more specific error messages
+        if (error.message.includes('Failed to fetch')) {
+          setError("Cannot connect to authentication service. Please check your internet connection and try again.")
+        } else if (error.message.includes('eyJ')) {
           setError("Configuration error. Please contact support.")
+        } else if (error.message.includes('Invalid API key')) {
+          setError("Authentication configuration error. Please contact support.")
         } else {
           setError(error.message)
         }

@@ -8,5 +8,22 @@ export function createClient() {
     throw new Error("Missing Supabase environment variables. Please check your Vercel environment settings.")
   }
 
-  return createBrowserClient(supabaseUrl, supabaseAnonKey)
+  // Add some debug logging in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Supabase URL:', supabaseUrl)
+    console.log('Supabase Key exists:', !!supabaseAnonKey)
+  }
+
+  try {
+    return createBrowserClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    })
+  } catch (error) {
+    console.error('Error creating Supabase client:', error)
+    throw error
+  }
 }
