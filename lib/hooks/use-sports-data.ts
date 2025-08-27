@@ -67,6 +67,10 @@ export function useMatches(filters?: {
   status?: string
   date?: string
   limit?: number
+  page?: number
+  pageSize?: number
+  sport?: string
+  includeExternal?: boolean
 }) {
   const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
@@ -80,6 +84,10 @@ export function useMatches(filters?: {
         if (filters?.status) params.append("status", filters.status)
         if (filters?.date) params.append("date", filters.date)
         if (filters?.limit) params.append("limit", filters.limit.toString())
+        if (filters?.page) params.append("page", filters.page.toString())
+        if (filters?.pageSize) params.append("page_size", filters.pageSize.toString())
+        if (filters?.sport) params.append("sport", filters.sport)
+        if (filters?.includeExternal !== undefined) params.append("include_external", filters.includeExternal.toString())
 
         const response = await fetch(`/api/matches?${params}`)
         const data = await response.json()
@@ -97,7 +105,7 @@ export function useMatches(filters?: {
     }
 
     fetchMatches()
-  }, [filters?.leagueId, filters?.status, filters?.date, filters?.limit])
+  }, [filters?.leagueId, filters?.status, filters?.date, filters?.limit, filters?.page, filters?.pageSize, filters?.sport, filters?.includeExternal])
 
   const syncMatches = async (sport = "soccer_epl") => {
     try {

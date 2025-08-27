@@ -1,7 +1,42 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import type { BankrollData, BetRecord, BankrollStats } from "@/lib/services/bankroll-manager"
+
+// Define the types here since bankroll-manager was removed
+interface BankrollData {
+  id: string
+  user_id: string
+  balance: number
+  simulation_balance: number
+  created_at: string
+  updated_at: string
+}
+
+interface BankrollStats {
+  total_bets: number
+  winning_bets: number
+  losing_bets: number
+  win_rate: number
+  profit_loss: number
+  roi: number
+  balance: number
+  simulation_balance: number
+}
+
+interface BetRecord {
+  id: string
+  user_id: string
+  match_id: string
+  bet_type: string
+  amount: number
+  odds: number
+  potential_payout: number
+  actual_payout?: number
+  status: 'pending' | 'won' | 'lost' | 'cancelled'
+  is_simulation: boolean
+  created_at: string
+  updated_at: string
+}
 
 export function useBankroll() {
   const [bankroll, setBankroll] = useState<BankrollData | null>(null)

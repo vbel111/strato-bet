@@ -1,4 +1,3 @@
-import { BankrollManager } from "@/lib/services/bankroll-manager"
 import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
 
@@ -14,13 +13,20 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const bankrollManager = BankrollManager.getInstance()
-    const bankroll = await bankrollManager.getUserBankroll(user.id)
+    // Get or create user bankroll
+    let { data: bankroll } = await supabase
+      .from('user_bankrolls')
+      .select('*')
+      .eq('user_id', user.id)
+      .single()
 
     if (!bankroll) {
-      // Initialize bankroll if it doesn't exist
-      const newBankroll = await bankrollManager.initializeBankroll(user.id)
-      return NextResponse.json({ bankroll: newBankroll })
+      const { data: newBankroll } = await supabase
+        .from('user_bankrolls')
+        .insert({ user_id: user.id })
+        .select()
+        .single()
+      bankroll = newBankroll
     }
 
     return NextResponse.json({ bankroll })
@@ -48,8 +54,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid initial balance" }, { status: 400 })
     }
 
-    const bankrollManager = BankrollManager.getInstance()
-    const bankroll = await bankrollManager.initializeBankroll(user.id, initialBalance)
+    // Update or create bankroll with initial balance
+    const { data: bankroll, error } = await supabase
+      .from('user_bankrolls')
+      .upsert({ 
+        user_id: user.id, 
+        balance: initialBalance,
+        simulation_balance: 10000 // Default simulation balance
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error("Error initializing bankroll:", error)
+      return NextResponse.json({ error: "Failed to initialize bankroll" }, { status: 500 })
+    }
 
     return NextResponse.json({ bankroll })
   } catch (error) {

@@ -91,7 +91,7 @@ export class SportsDataService {
       }
     } catch (error) {
       console.error("Error fetching esports matches:", error)
-      return this.getMockEsportsMatches(page, pageSize)
+      throw error
     }
   }
 
@@ -139,7 +139,7 @@ export class SportsDataService {
       }
     } catch (error) {
       console.error("Error fetching traditional sports matches:", error)
-      return this.getMockTraditionalSports(page, pageSize)
+      throw error
     }
   }
 

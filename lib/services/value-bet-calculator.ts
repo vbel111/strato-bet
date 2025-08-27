@@ -278,7 +278,7 @@ export class ValueBetCalculator {
     const prediction = comparison.predictions?.[0]
     if (!prediction) return null
 
-    const oddsComparison = comparison.odds.map((odds) => ({
+    const oddsComparison = comparison.odds.map((odds: any) => ({
       bookmaker: odds.bookmaker.name,
       home_odds: odds.home_odds,
       draw_odds: odds.draw_odds,

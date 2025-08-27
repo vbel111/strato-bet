@@ -41,6 +41,35 @@ export function DashboardContent({ user }: DashboardContentProps) {
 
   const [isCalculating, setIsCalculating] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
+  const [generatingPrediction, setGeneratingPrediction] = useState<string | null>(null)
+
+  const generatePrediction = async (match: any) => {
+    try {
+      setGeneratingPrediction(match.id)
+      const homeTeam = typeof match.home_team === 'string' ? match.home_team : match.home_team?.name || 'Home Team'
+      const awayTeam = typeof match.away_team === 'string' ? match.away_team : match.away_team?.name || 'Away Team'
+      
+      const response = await fetch('/api/predictions/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          matchId: match.id,
+          homeTeam,
+          awayTeam,
+          league: match.league?.name || match.sport_title || 'Unknown League'
+        })
+      })
+      
+      if (response.ok) {
+        // Refresh predictions after generating
+        window.location.reload()
+      }
+    } catch (error) {
+      console.error('Error generating prediction:', error)
+    } finally {
+      setGeneratingPrediction(null)
+    }
+  }
 
   const sportCategories = [
     { value: "soccer_epl", label: "Premier League", type: "traditional" },
@@ -207,11 +236,11 @@ export function DashboardContent({ user }: DashboardContentProps) {
                     {matches.slice(0, 3).map((match) => (
                       <div key={match.id} className="p-4 border rounded-lg">
                         <p className="font-medium font-body">
-                          {match.home_team?.name || match.home_team} vs {match.away_team?.name || match.away_team}
+                          {typeof match.home_team === 'string' ? match.home_team : match.home_team?.name || 'Home Team'} vs {typeof match.away_team === 'string' ? match.away_team : match.away_team?.name || 'Away Team'}
                         </p>
                         <p className="text-sm text-muted-foreground font-body">
-                          {match.league?.name || match.sport_title} •{" "}
-                          {new Date(match.match_date || match.commence_time).toLocaleDateString()}
+                          {match.league?.name || (match as any).sport_title || 'Unknown League'} •{" "}
+                          {new Date((match as any).match_date || (match as any).commence_time).toLocaleDateString()}
                         </p>
                       </div>
                     ))}
@@ -284,35 +313,64 @@ export function DashboardContent({ user }: DashboardContentProps) {
                 <p className="text-muted-foreground font-body">Loading matches...</p>
               ) : (
                 <div className="space-y-4">
-                  {matches.map((match) => (
-                    <div key={match.id} className="p-4 border rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium font-body">
-                            {match.home_team?.name || match.home_team} vs {match.away_team?.name || match.away_team}
-                          </p>
-                          <p className="text-sm text-muted-foreground font-body">
-                            {match.league?.name || match.sport_title} •{" "}
-                            {new Date(match.match_date || match.commence_time).toLocaleDateString()} at{" "}
-                            {new Date(match.match_date || match.commence_time).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </p>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          {sportCategories.find((s) => s.value === selectedSport)?.type === "esports" && (
-                            <Badge variant="secondary" className="text-xs">
-                              Esports
+                  {matches.map((match) => {
+                    const matchPrediction = predictions.find(p => p.match_id === match.id)
+                    return (
+                      <div key={match.id} className="p-4 border rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <p className="font-medium font-body">
+                              {typeof match.home_team === 'string' ? match.home_team : match.home_team?.name || 'Home Team'} vs {typeof match.away_team === 'string' ? match.away_team : match.away_team?.name || 'Away Team'}
+                            </p>
+                            <p className="text-sm text-muted-foreground font-body">
+                              {match.league?.name || (match as any).sport_title || 'Unknown League'} •{" "}
+                              {new Date((match as any).match_date || (match as any).commence_time).toLocaleDateString()} at{" "}
+                              {new Date((match as any).match_date || (match as any).commence_time).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </p>
+                            {matchPrediction && (
+                              <div className="mt-2 p-2 bg-muted rounded-sm">
+                                <p className="text-xs font-medium text-muted-foreground mb-1">AI Prediction</p>
+                                <div className="flex space-x-3 text-xs">
+                                  <span>Home: {(matchPrediction.home_win_probability * 100).toFixed(1)}%</span>
+                                  {(matchPrediction.draw_probability || 0) > 0 && (
+                                    <span>Draw: {((matchPrediction.draw_probability || 0) * 100).toFixed(1)}%</span>
+                                  )}
+                                  <span>Away: {(matchPrediction.away_win_probability * 100).toFixed(1)}%</span>
+                                  <Badge variant="outline" className="text-xs ml-auto">
+                                    {(matchPrediction.confidence_score * 100).toFixed(0)}% confidence
+                                  </Badge>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex items-center space-x-2 ml-4">
+                            {!matchPrediction && (
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                onClick={() => generatePrediction(match)}
+                                disabled={generatingPrediction === match.id}
+                                className="text-xs"
+                              >
+                                {generatingPrediction === match.id ? "Generating..." : "Generate Prediction"}
+                              </Button>
+                            )}
+                            {sportCategories.find((s) => s.value === selectedSport)?.type === "esports" && (
+                              <Badge variant="secondary" className="text-xs">
+                                Esports
+                              </Badge>
+                            )}
+                            <Badge variant="outline" className="font-body">
+                              {match.status || "scheduled"}
                             </Badge>
-                          )}
-                          <Badge variant="outline" className="font-body">
-                            {match.status || "scheduled"}
-                          </Badge>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
 
                   {matches.length === 20 && (
                     <div className="flex justify-center space-x-2 pt-4">

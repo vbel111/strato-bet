@@ -2,30 +2,6 @@ import { createClient } from "@/lib/supabase/server"
 import { z } from "zod"
 import type { PredictionInput, MLModelResponse, TeamStats, HistoricalMatch } from "@/lib/types/predictions"
 
-// Type definitions for AI modules
-interface AIModules {
-  generateObject: any
-  openai: any
-}
-
-// Conditional AI imports with proper error handling
-async function getAIModule(): Promise<AIModules | null> {
-  if (!process.env.OPENAI_API_KEY) {
-    console.warn("OPENAI_API_KEY not configured - using fallback predictions")
-    return null
-  }
-  
-  try {
-    // Use require for dynamic imports to avoid TypeScript module resolution issues
-    const { generateObject } = require("ai")
-    const { openai } = require("@ai-sdk/openai")
-    return { generateObject, openai }
-  } catch (error) {
-    console.warn("AI SDK packages not available - using fallback predictions:", error)
-    return null
-  }
-}
-
 const predictionSchema = z.object({
   home_win_probability: z.number().min(0).max(1),
   draw_probability: z.number().min(0).max(1).optional(),
@@ -43,8 +19,11 @@ const predictionSchema = z.object({
 export class MLPredictionService {
   private static instance: MLPredictionService
   private modelVersion = "v1.0.0"
+  private openaiApiKey: string
 
-  private constructor() {}
+  private constructor() {
+    this.openaiApiKey = process.env.OPENAI_API_KEY || ""
+  }
 
   public static getInstance(): MLPredictionService {
     if (!MLPredictionService.instance) {
@@ -55,38 +34,62 @@ export class MLPredictionService {
 
   async generatePrediction(input: PredictionInput): Promise<MLModelResponse> {
     try {
-      // Check if OpenAI API key is available and get AI modules
-      const aiModules = await getAIModule()
-      
-      if (!aiModules) {
-        console.info("Using fallback prediction model for match:", `${input.homeTeam} vs ${input.awayTeam}`)
+      if (!this.openaiApiKey) {
+        console.info("OpenAI API key not configured, using fallback prediction model")
         return this.getFallbackPrediction(input)
       }
 
-      const { generateObject, openai } = aiModules
-
-      // Use AI SDK to generate structured predictions
-      const { object } = await generateObject({
-        model: openai("gpt-4o"),
-        schema: predictionSchema,
-        prompt: this.buildPredictionPrompt(input),
-        maxTokens: 500,
-        temperature: 0.1, // Low temperature for consistent predictions
+      // Use OpenAI API directly for predictions
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.openaiApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are an expert sports betting analyst. Analyze matches and provide win probabilities as JSON only. Return exactly this format: {"home_win_probability": 0.45, "draw_probability": 0.25, "away_win_probability": 0.30, "confidence_score": 0.75, "factors": {"form": 0.8, "head_to_head": 0.6, "home_advantage": 0.7, "team_strength": 0.75}, "reasoning": "brief analysis"}'
+            },
+            {
+              role: 'user',
+              content: this.buildPredictionPrompt(input)
+            }
+          ],
+          max_tokens: 500,
+          temperature: 0.1,
+        }),
       })
 
+      if (!response.ok) {
+        throw new Error(`OpenAI API error: ${response.status}`)
+      }
+
+      const data = await response.json()
+      const content = data.choices[0]?.message?.content
+
+      if (!content) {
+        throw new Error('No response from OpenAI')
+      }
+
+      // Parse the JSON response
+      const prediction = JSON.parse(content)
+      
       // Validate that probabilities sum to approximately 1
-      const total = (object.home_win_probability || 0) + (object.draw_probability || 0) + (object.away_win_probability || 0)
+      const total = (prediction.home_win_probability || 0) + (prediction.draw_probability || 0) + (prediction.away_win_probability || 0)
       if (Math.abs(total - 1.0) > 0.1) {
         console.warn("AI prediction probabilities don't sum to 1, using fallback")
         return this.getFallbackPrediction(input)
       }
 
       return {
-        home_win_probability: object.home_win_probability,
-        draw_probability: object.draw_probability || 0,
-        away_win_probability: object.away_win_probability,
-        confidence_score: object.confidence_score,
-        factors: object.factors,
+        home_win_probability: prediction.home_win_probability,
+        draw_probability: prediction.draw_probability || 0,
+        away_win_probability: prediction.away_win_probability,
+        confidence_score: prediction.confidence_score,
+        factors: prediction.factors,
       }
     } catch (error) {
       console.error("Error generating AI prediction:", error)
