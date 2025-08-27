@@ -56,7 +56,7 @@ export function DashboardContent({ user }: DashboardContentProps) {
           matchId: match.id,
           homeTeam,
           awayTeam,
-          league: match.league?.name || match.sport_title || 'Unknown League'
+          league: match.league?.name || (match as any).sport_title || 'Unknown League'
         })
       })
       
@@ -240,7 +240,7 @@ export function DashboardContent({ user }: DashboardContentProps) {
                         </p>
                         <p className="text-sm text-muted-foreground font-body">
                           {match.league?.name || (match as any).sport_title || 'Unknown League'} •{" "}
-                          {new Date((match as any).match_date || (match as any).commence_time).toLocaleDateString()}
+                          {new Date((match as any).match_date || (match as any).commence_time || Date.now()).toLocaleDateString()}
                         </p>
                       </div>
                     ))}
@@ -324,8 +324,8 @@ export function DashboardContent({ user }: DashboardContentProps) {
                             </p>
                             <p className="text-sm text-muted-foreground font-body">
                               {match.league?.name || (match as any).sport_title || 'Unknown League'} •{" "}
-                              {new Date((match as any).match_date || (match as any).commence_time).toLocaleDateString()} at{" "}
-                              {new Date((match as any).match_date || (match as any).commence_time).toLocaleTimeString([], {
+                              {new Date((match as any).match_date || (match as any).commence_time || Date.now()).toLocaleDateString()} at{" "}
+                              {new Date((match as any).match_date || (match as any).commence_time || Date.now()).toLocaleTimeString([], {
                                 hour: "2-digit",
                                 minute: "2-digit",
                               })}
@@ -334,13 +334,13 @@ export function DashboardContent({ user }: DashboardContentProps) {
                               <div className="mt-2 p-2 bg-muted rounded-sm">
                                 <p className="text-xs font-medium text-muted-foreground mb-1">AI Prediction</p>
                                 <div className="flex space-x-3 text-xs">
-                                  <span>Home: {(matchPrediction.home_win_probability * 100).toFixed(1)}%</span>
+                                  <span>Home: {((matchPrediction.home_win_probability || 0) * 100).toFixed(1)}%</span>
                                   {(matchPrediction.draw_probability || 0) > 0 && (
                                     <span>Draw: {((matchPrediction.draw_probability || 0) * 100).toFixed(1)}%</span>
                                   )}
-                                  <span>Away: {(matchPrediction.away_win_probability * 100).toFixed(1)}%</span>
+                                  <span>Away: {((matchPrediction.away_win_probability || 0) * 100).toFixed(1)}%</span>
                                   <Badge variant="outline" className="text-xs ml-auto">
-                                    {(matchPrediction.confidence_score * 100).toFixed(0)}% confidence
+                                    {((matchPrediction.confidence_score || 0) * 100).toFixed(0)}% confidence
                                   </Badge>
                                 </div>
                               </div>
