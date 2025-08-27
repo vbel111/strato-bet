@@ -57,12 +57,12 @@ export function ValueBetCard({ valueBet, onPlaceBet }: ValueBetCardProps) {
           <div>
             <p className="font-medium font-body">Bet: {getBetTypeLabel(valueBet.bet_type)}</p>
             <p className="text-sm text-muted-foreground font-body">
-              {valueBet.bookmaker_name} @ {valueBet.bookmaker_odds.toFixed(2)}
+              {valueBet.bookmaker_name} @ {(valueBet.bookmaker_odds || 0).toFixed(2)}
             </p>
           </div>
           <div className="text-right">
             <Badge className={`${getValueColor(valueBet.value_percentage)} border-0`}>
-              +{valueBet.value_percentage.toFixed(1)}% Value
+              +{(valueBet.value_percentage || 0).toFixed(1)}% Value
             </Badge>
           </div>
         </div>
@@ -84,16 +84,16 @@ export function ValueBetCard({ valueBet, onPlaceBet }: ValueBetCardProps) {
           </div>
           <div>
             <p className="text-muted-foreground">Kelly %</p>
-            <p className="font-medium">{valueBet.kelly_percentage.toFixed(1)}%</p>
+            <p className="font-medium">{(valueBet.kelly_percentage || 0).toFixed(1)}%</p>
           </div>
         </div>
 
         <div className="pt-2">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-muted-foreground font-body">Expected Value</span>
-            <span className={`text-sm font-medium ${valueBet.expected_value > 0 ? "text-green-600" : "text-red-600"}`}>
-              {valueBet.expected_value > 0 ? "+" : ""}
-              {valueBet.expected_value.toFixed(3)}
+            <span className={`text-sm font-medium ${(valueBet.expected_value || 0) > 0 ? "text-green-600" : "text-red-600"}`}>
+              {(valueBet.expected_value || 0) > 0 ? "+" : ""}
+              {(valueBet.expected_value || 0).toFixed(3)}
             </span>
           </div>
 

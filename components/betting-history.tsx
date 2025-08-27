@@ -67,36 +67,32 @@ export function BettingHistory() {
                   <TableCell className="font-body">
                     <div>
                       <p className="font-medium">
-                        {bet.match_info?.home_team} vs {bet.match_info?.away_team}
+                        Match ID: {bet.match_id}
                       </p>
-                      <p className="text-xs text-muted-foreground">{bet.match_info?.league}</p>
+                      <p className="text-xs text-muted-foreground">{bet.bet_type}</p>
                     </div>
                   </TableCell>
                   <TableCell className="font-body">
                     <Badge variant="outline" className="capitalize">
-                      {bet.bet_type === "home"
-                        ? bet.match_info?.home_team
-                        : bet.bet_type === "away"
-                          ? bet.match_info?.away_team
-                          : "Draw"}
+                      {bet.bet_type}
                     </Badge>
                   </TableCell>
-                  <TableCell className="font-body">${bet.stake_amount.toFixed(2)}</TableCell>
-                  <TableCell className="font-body">{bet.odds.toFixed(2)}</TableCell>
+                  <TableCell className="font-body">${(bet.amount || 0).toFixed(2)}</TableCell>
+                  <TableCell className="font-body">{(bet.odds || 0).toFixed(2)}</TableCell>
                   <TableCell>
                     <Badge className={`${getStatusColor(bet.status)} border-0 capitalize`}>{bet.status}</Badge>
                   </TableCell>
                   <TableCell className="font-body">
                     {bet.status === "pending" ? (
-                      <span className="text-muted-foreground">${bet.potential_payout.toFixed(2)}</span>
+                      <span className="text-muted-foreground">${(bet.potential_payout || 0).toFixed(2)}</span>
                     ) : (
-                      <span className={bet.actual_payout > 0 ? "text-green-600" : "text-red-600"}>
-                        ${bet.actual_payout.toFixed(2)}
+                      <span className={(bet.actual_payout || 0) > 0 ? "text-green-600" : "text-red-600"}>
+                        ${(bet.actual_payout || 0).toFixed(2)}
                       </span>
                     )}
                   </TableCell>
                   <TableCell className="font-body text-sm text-muted-foreground">
-                    {new Date(bet.placed_at).toLocaleDateString()}
+                    {new Date(bet.created_at).toLocaleDateString()}
                   </TableCell>
                 </TableRow>
               ))}

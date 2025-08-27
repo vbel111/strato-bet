@@ -206,11 +206,11 @@ export function DashboardContent({ user }: DashboardContentProps) {
                             {bet.match_info.home_team} vs {bet.match_info.away_team}
                           </p>
                           <Badge className="bg-green-100 text-green-800 border-0">
-                            +{bet.value_percentage.toFixed(1)}%
+                            +{(bet.value_percentage || 0).toFixed(1)}%
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground font-body">
-                          {bet.bookmaker_name} @ {bet.bookmaker_odds.toFixed(2)}
+                          {bet.bookmaker_name} @ {(bet.bookmaker_odds || 0).toFixed(2)}
                         </p>
                       </div>
                     ))}

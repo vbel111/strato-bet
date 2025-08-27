@@ -35,21 +35,21 @@ export function BankrollOverview() {
     )
   }
 
-  const balancePercentage = (bankroll.current_balance / bankroll.initial_balance) * 100
+  const balancePercentage = ((bankroll.balance || 1000) / 1000) * 100
 
   return (
     <div className="grid md:grid-cols-4 gap-6">
       <Card>
         <CardHeader className="pb-2">
           <CardDescription className="font-body">Current Balance</CardDescription>
-          <CardTitle className="text-2xl font-heading">${bankroll.current_balance.toFixed(2)}</CardTitle>
+          <CardTitle className="text-2xl font-heading">${(bankroll.balance || 0).toFixed(2)}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center space-x-2">
             <Progress value={Math.min(100, balancePercentage)} className="flex-1" />
-            <span className={`text-sm font-medium ${balancePercentage >= 100 ? "text-green-600" : "text-red-600"}`}>
-              {balancePercentage >= 100 ? "+" : ""}
-              {(balancePercentage - 100).toFixed(1)}%
+            <span className={`text-sm font-medium ${(balancePercentage || 100) >= 100 ? "text-green-600" : "text-red-600"}`}>
+              {(balancePercentage || 100) >= 100 ? "+" : ""}
+              {((balancePercentage || 100) - 100).toFixed(1)}%
             </span>
           </div>
         </CardContent>
@@ -57,39 +57,38 @@ export function BankrollOverview() {
 
       <Card>
         <CardHeader className="pb-2">
-          <CardDescription className="font-body">Total Wagered</CardDescription>
-          <CardTitle className="text-2xl font-heading">${bankroll.total_wagered.toFixed(2)}</CardTitle>
+          <CardDescription className="font-body">Simulation Balance</CardDescription>
+          <CardTitle className="text-2xl font-heading">${(bankroll.simulation_balance || 0).toFixed(2)}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground font-body">Across {stats.total_bets} bets</p>
+          <p className="text-sm text-muted-foreground font-body">Practice trading</p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="pb-2">
           <CardDescription className="font-body">Win Rate</CardDescription>
-          <CardTitle className="text-2xl font-heading">{stats.win_rate.toFixed(1)}%</CardTitle>
+          <CardTitle className="text-2xl font-heading">{(stats.win_rate || 0).toFixed(1)}%</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground font-body">
-            {stats.winning_bets}W / {stats.losing_bets}L
+            {stats.winning_bets || 0}W / {stats.losing_bets || 0}L
           </p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="pb-2">
-          <CardDescription className="font-body">ROI</CardDescription>
+          <CardDescription className="font-body">Profit/Loss</CardDescription>
           <CardTitle
-            className={`text-2xl font-heading ${bankroll.roi_percentage >= 0 ? "text-green-600" : "text-red-600"}`}
+            className={`text-2xl font-heading ${(stats.profit_loss || 0) >= 0 ? "text-green-600" : "text-red-600"}`}
           >
-            {bankroll.roi_percentage >= 0 ? "+" : ""}
-            {bankroll.roi_percentage.toFixed(1)}%
+            {(stats.profit_loss || 0) >= 0 ? "+" : ""}${(stats.profit_loss || 0).toFixed(2)}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className={`text-sm font-medium ${stats.profit_loss >= 0 ? "text-green-600" : "text-red-600"}`}>
-            {stats.profit_loss >= 0 ? "+" : ""}${stats.profit_loss.toFixed(2)}
+          <p className={`text-sm font-medium ${(stats.roi || 0) >= 0 ? "text-green-600" : "text-red-600"}`}>
+            ROI: {(stats.roi || 0).toFixed(1)}%
           </p>
         </CardContent>
       </Card>

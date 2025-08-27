@@ -42,7 +42,7 @@ export function OddsComparisonTable({ comparison }: OddsComparisonProps) {
           ? "bg-yellow-100 text-yellow-800"
           : "bg-gray-100 text-gray-800"
 
-    return <Badge className={`${color} border-0 text-xs`}>+{value.valuePercentage.toFixed(1)}%</Badge>
+    return <Badge className={`${color} border-0 text-xs`}>+{(value.valuePercentage || 0).toFixed(1)}%</Badge>
   }
 
   return (
@@ -100,7 +100,7 @@ export function OddsComparisonTable({ comparison }: OddsComparisonProps) {
 
               <TableCell className="text-center">
                 <div className="space-y-1">
-                  <p className="font-medium">{odds.home_odds.toFixed(2)}</p>
+                  <p className="font-medium">{(odds.home_odds || 0).toFixed(2)}</p>
                   <p className="text-xs text-muted-foreground">{formatProbability(odds.home_implied)}</p>
                   {getValueBadge(odds.home_value)}
                 </div>
@@ -109,7 +109,7 @@ export function OddsComparisonTable({ comparison }: OddsComparisonProps) {
               {comparison.prediction.draw_probability && (
                 <TableCell className="text-center">
                   <div className="space-y-1">
-                    <p className="font-medium">{odds.draw_odds?.toFixed(2) || "-"}</p>
+                    <p className="font-medium">{odds.draw_odds ? (odds.draw_odds || 0).toFixed(2) : "-"}</p>
                     <p className="text-xs text-muted-foreground">
                       {odds.draw_implied ? formatProbability(odds.draw_implied) : "-"}
                     </p>
@@ -120,7 +120,7 @@ export function OddsComparisonTable({ comparison }: OddsComparisonProps) {
 
               <TableCell className="text-center">
                 <div className="space-y-1">
-                  <p className="font-medium">{odds.away_odds.toFixed(2)}</p>
+                  <p className="font-medium">{(odds.away_odds || 0).toFixed(2)}</p>
                   <p className="text-xs text-muted-foreground">{formatProbability(odds.away_implied)}</p>
                   {getValueBadge(odds.away_value)}
                 </div>
