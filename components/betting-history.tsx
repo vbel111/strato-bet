@@ -77,18 +77,18 @@ export function BettingHistory() {
                       {bet.bet_type}
                     </Badge>
                   </TableCell>
-                  <TableCell className="font-body">${(bet.amount || 0).toFixed(2)}</TableCell>
-                  <TableCell className="font-body">{(bet.odds || 0).toFixed(2)}</TableCell>
+                  <TableCell className="font-body">${(Number(bet.amount) || 0).toFixed(2)}</TableCell>
+                  <TableCell className="font-body">{(Number(bet.odds) || 0).toFixed(2)}</TableCell>
                   <TableCell>
                     <Badge className={`${getStatusColor(bet.status)} border-0 capitalize`}>{bet.status}</Badge>
                   </TableCell>
                   <TableCell className="font-body">
                     {bet.status === "pending" ? (
-                      <span className="text-muted-foreground">${(bet.potential_payout || 0).toFixed(2)}</span>
+                      <span className="text-muted-foreground">${(Number(bet.potential_payout) || 0).toFixed(2)}</span>
                     ) : (
-                      <span className={(bet.actual_payout || 0) > 0 ? "text-green-600" : "text-red-600"}>
-                        ${(bet.actual_payout || 0).toFixed(2)}
-                      </span>
+                      <div className="text-right">
+                        ${(Number(bet.actual_payout) || 0).toFixed(2)}
+                      </div>
                     )}
                   </TableCell>
                   <TableCell className="font-body text-sm text-muted-foreground">

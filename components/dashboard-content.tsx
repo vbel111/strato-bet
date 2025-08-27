@@ -203,14 +203,14 @@ export function DashboardContent({ user }: DashboardContentProps) {
                       <div key={bet.id} className="p-4 border rounded-lg">
                         <div className="flex items-center justify-between mb-2">
                           <p className="font-medium font-body">
-                            {bet.match_info.home_team} vs {bet.match_info.away_team}
+                            {bet.match_info?.home_team || 'Team 1'} vs {bet.match_info?.away_team || 'Team 2'}
                           </p>
                           <Badge className="bg-green-100 text-green-800 border-0">
-                            +{(bet.value_percentage || 0).toFixed(1)}%
+                            +{(Number(bet.value_percentage) || 0).toFixed(1)}%
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground font-body">
-                          {bet.bookmaker_name} @ {(bet.bookmaker_odds || 0).toFixed(2)}
+                          {bet.bookmaker_name} @ {(Number(bet.bookmaker_odds) || 0).toFixed(2)}
                         </p>
                       </div>
                     ))}
@@ -334,13 +334,13 @@ export function DashboardContent({ user }: DashboardContentProps) {
                               <div className="mt-2 p-2 bg-muted rounded-sm">
                                 <p className="text-xs font-medium text-muted-foreground mb-1">AI Prediction</p>
                                 <div className="flex space-x-3 text-xs">
-                                  <span>Home: {((matchPrediction.home_win_probability || 0) * 100).toFixed(1)}%</span>
-                                  {(matchPrediction.draw_probability || 0) > 0 && (
-                                    <span>Draw: {((matchPrediction.draw_probability || 0) * 100).toFixed(1)}%</span>
+                                  <span>Home: {((Number(matchPrediction.home_win_probability) || 0) * 100).toFixed(1)}%</span>
+                                  {(Number(matchPrediction.draw_probability) || 0) > 0 && (
+                                    <span>Draw: {((Number(matchPrediction.draw_probability) || 0) * 100).toFixed(1)}%</span>
                                   )}
-                                  <span>Away: {((matchPrediction.away_win_probability || 0) * 100).toFixed(1)}%</span>
+                                  <span>Away: {((Number(matchPrediction.away_win_probability) || 0) * 100).toFixed(1)}%</span>
                                   <Badge variant="outline" className="text-xs ml-auto">
-                                    {((matchPrediction.confidence_score || 0) * 100).toFixed(0)}% confidence
+                                    {((Number(matchPrediction.confidence_score) || 0) * 100).toFixed(0)}% confidence
                                   </Badge>
                                 </div>
                               </div>

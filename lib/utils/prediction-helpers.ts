@@ -1,5 +1,5 @@
 export function formatProbability(probability: number): string {
-  return `${(probability * 100).toFixed(1)}%`
+  return `${(Number(probability) * 100 || 0).toFixed(1)}%`
 }
 
 export function getConfidenceLevel(score: number): string {
